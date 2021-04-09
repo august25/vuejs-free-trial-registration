@@ -6,54 +6,21 @@
     </div>
     <div class="pincode-grid">
       <input
+        v-for="(pin, pinIndex) in pinValues"
+        :key="pinIndex"
+        :class="{ 'invalid': !isPinValueValid(pinIndex) }"
+        @input="focusNextPinInput(pinIndex)"
+        @keyup.backspace="focusPrevPinInput(pinIndex)"
+        v-model="pin.value"
+        ref="pins"
         type="text"
-        @input="pinUpdated"
-        :class="{ 'invalid': isPin1Valid === 0 }"
-        v-model="pin1"
-        ref="pin1"
-        maxlength="5"
-        minlength="1" />
-      <input
-        type="text"
-        @input="pinUpdated"
-        :class="{ 'invalid': isPin2Valid === 0 }"
-        @keyup.backspace="gotoInput($refs.pin1)"
-        v-model="pin2"
-        ref="pin2"
-        maxlength="1"
-        minlength="1" />
-      <input
-        type="text"
-        @input="pinUpdated"
-        :class="{ 'invalid': isPin3Valid === 0 }"
-        @keyup.backspace="gotoInput($refs.pin2)"
-        v-model="pin3"
-        ref="pin3"
-        maxlength="1"
-        minlength="1" />
-      <input
-        type="text"
-        @input="pinUpdated"
-        :class="{ 'invalid': isPin4Valid === 0 }"
-        @keyup.backspace="gotoInput($refs.pin3)"
-        v-model="pin4"
-        ref="pin4"
-        maxlength="1"
-        minlength="1" />
-      <input
-        type="text"
-        @input="pinUpdated"
-        :class="{ 'invalid': isPin5Valid === 0 }"
-        @keyup.backspace="gotoInput($refs.pin4)"
-        v-model="pin5"
-        ref="pin5"
         maxlength="1"
         minlength="1" />
     </div>
     <h4 v-if="!hasResent">
       Didn't receive an email? <a href="javascript:void(0)" @click="resendEmail(email)">Resend code</a>
     </h4>
-    <h4 v-if="hasResent">
+    <h4 v-else>
       Your activation code has been resent to {{ email }}
     </h4>
   </div>
@@ -65,7 +32,29 @@ export default {
   name: 'Pincode',
   data () {
     return {
-      hasResent: false
+      hasResent: false,
+      pinValues: [
+        {
+          value: undefined,
+          valid: false
+        },
+        {
+          value: undefined,
+          valid: false
+        },
+        {
+          value: undefined,
+          valid: false
+        },
+        {
+          value: undefined,
+          valid: false
+        },
+        {
+          value: undefined,
+          valid: false
+        }
+      ]
     }
   },
   computed: {
@@ -73,83 +62,33 @@ export default {
       get () {
         return this.$store.state.formValues.email.value
       }
-    },
-    pin1: {
-      get () {
-        return this.$store.state.formValues.pin.pin1.value
-      },
-      set (val) {
-        this.$store.commit('formValues/setPin1Value', val)
-      }
-    },
-    pin2: {
-      get () {
-        return this.$store.state.formValues.pin.pin2.value
-      },
-      set (val) {
-        this.$store.commit('formValues/setPin2Value', val)
-      }
-    },
-    pin3: {
-      get () {
-        return this.$store.state.formValues.pin.pin3.value
-      },
-      set (val) {
-        this.$store.commit('formValues/setPin3Value', val)
-      }
-    },
-    pin4: {
-      get () {
-        return this.$store.state.formValues.pin.pin4.value
-      },
-      set (val) {
-        this.$store.commit('formValues/setPin4Value', val)
-      }
-    },
-    pin5: {
-      get () {
-        return this.$store.state.formValues.pin.pin5.value
-      },
-      set (val) {
-        this.$store.commit('formValues/setPin5Value', val)
-      }
-    },
-    isPin1Valid: {
-      get () {
-        return this.$store.state.formValues.pin.pin1.valid
-      }
-    },
-    isPin2Valid: {
-      get () {
-        return this.$store.state.formValues.pin.pin2.valid
-      }
-    },
-    isPin3Valid: {
-      get () {
-        return this.$store.state.formValues.pin.pin3.valid
-      }
-    },
-    isPin4Valid: {
-      get () {
-        return this.$store.state.formValues.pin.pin4.valid
-      }
-    },
-    isPin5Valid: {
-      get () {
-        return this.$store.state.formValues.pin.pin5.valid
-      }
     }
   },
   methods: {
     setFocus () {
       this.$nextTick(() => {
-        this.$refs.pin1.focus({
-          preventScroll: true
-        })
+        this.gotoInput(0)
       })
     },
-    gotoInput (input) {
-      input.focus({
+    isPinValueValid (currentPinInputIndex) {
+      return this.pinValues[currentPinInputIndex].value && this.pinValues[currentPinInputIndex].value.length === 1
+    },
+    focusPrevPinInput (currentPinInputIndex) {
+      const prevPinInputIndex = currentPinInputIndex - 1
+      if (prevPinInputIndex > -1) {
+        this.gotoInput(prevPinInputIndex)
+      }
+    },
+    focusNextPinInput (currentPinInputIndex) {
+      const nextPinInputIndex = currentPinInputIndex + 1
+      if (nextPinInputIndex < this.pinValues.length) {
+        this.gotoInput(currentPinInputIndex + 1)
+      } else {
+        this.submitPin()
+      }
+    },
+    gotoInput (pinInputIndex) {
+      this.$refs.pins[pinInputIndex].focus({
         preventScroll: true
       })
     },
@@ -157,33 +96,10 @@ export default {
       this.hasResent = true
       this.$emit('send-email', email)
     },
-    pinUpdated () {
-      if (this.pin1.length > 1) {
-        this.pin5 = this.pin1.length > 4 ? this.pin1.charAt(4) : undefined
-        this.pin4 = this.pin1.length > 3 ? this.pin1.charAt(3) : undefined
-        this.pin3 = this.pin1.length > 2 ? this.pin1.charAt(2) : undefined
-        this.pin2 = this.pin1.length > 1 ? this.pin1.charAt(1) : undefined
-        this.pin1 = this.pin1.charAt(0)
-      }
-      if (this.pin1 && this.pin1.length === 1) {
-        this.$refs.pin2.focus()
-        if (this.pin2 && this.pin2.length === 1) {
-          this.$refs.pin3.focus()
-          if (this.pin3 && this.pin3.length === 1) {
-            this.$refs.pin4.focus()
-            if (this.pin4 && this.pin4.length === 1) {
-              this.$refs.pin5.focus()
-              if (this.pin5) {
-                this.$nextTick(() => {
-                  this.pinEntered(`${this.pin1}${this.pin2}${this.pin3}${this.pin4}${this.pin5}`)
-                })
-              }
-            }
-          }
-        }
-      }
-    },
-    pinEntered (pincode) {
+    submitPin () {
+      console.log(this.pinValues.reduce((accumulator, curPin) => {
+        return accumulator + curPin.value
+      }, ''))
       // Used for demo purposes
       this.$emit('retrieved-token', 'dummy_jwt_token')
       // axios.post('/api/signin', {

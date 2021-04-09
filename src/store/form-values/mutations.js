@@ -78,21 +78,6 @@ export const setPin5Value = (state, val) => {
   state.pin.pin5.valid = val.length > 0
 }
 
-export const resetParams = (state) => {
-  setEmailValue(state, undefined)
-  setFirstNameValue(state, undefined)
-  setLastNameValue(state, undefined)
-  setPasswordValue(state, undefined)
-  setPhoneNumber1Value(state, undefined)
-  setPhoneNumber2Value(state, undefined)
-  setPhoneNumber3Value(state, undefined)
-  setPin1Value(state, undefined)
-  setPin2Value(state, undefined)
-  setPin3Value(state, undefined)
-  setPin4Value(state, undefined)
-  setPin5Value(state, undefined)
-}
-
 function testEmail (email) {
   var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   return re.test(email)
